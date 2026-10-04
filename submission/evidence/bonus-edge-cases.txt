@@ -1,0 +1,1 @@
+PASS: duplicate inputs share cache; replay 0 calls; model and input changes invalidate; invalid output cached/quarantined once; deleted tickets leave Gold; strict schema rejects invalid shapes.

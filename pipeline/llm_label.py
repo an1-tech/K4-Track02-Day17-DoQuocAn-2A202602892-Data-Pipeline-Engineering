@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import re
+from hashlib import sha256
 
 import duckdb
 
@@ -60,15 +61,15 @@ def estimate_tokens(texts: list[str]) -> int:
 
 
 def parse_label(raw: str) -> str | None:
-    """Pull {"label": ...} out of the model's answer; None if it is not valid."""
-    m = re.search(r"\{.*\}", raw, flags=re.S)
-    if not m:
-        return None
+    """Accept only a JSON object containing exactly one allowed label."""
     try:
-        label = json.loads(m.group(0)).get("label")
-    except json.JSONDecodeError:
+        obj = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
         return None
-    return label if label in ALLOWED_LABELS else None
+    if not isinstance(obj, dict) or set(obj) != {"label"}:
+        return None
+    label = obj["label"]
+    return label if isinstance(label, str) and label in ALLOWED_LABELS else None
 
 
 def live_tickets(con: duckdb.DuckDBPyConnection) -> list[tuple[str, str]]:
@@ -81,13 +82,62 @@ def live_tickets(con: duckdb.DuckDBPyConnection) -> list[tuple[str, str]]:
 
 
 def label_tickets(con: duckdb.DuckDBPyConnection, llm: FakeLLM) -> dict:
-    """NAIVE version (shipped): one LLM call per ticket per run, no validation."""
+    """Cache validated and rejected answers; publish only current valid labels."""
+    model = llm.model
+    calls_before = llm.calls
+    tickets = live_tickets(con)
+    con.execute("""CREATE TABLE IF NOT EXISTS llm_label_cache (
+        input_hash VARCHAR, model VARCHAR, prompt_version VARCHAR,
+        label VARCHAR, raw_answer VARCHAR, reason VARCHAR,
+        PRIMARY KEY (input_hash, model, prompt_version))""")
+    con.execute("""CREATE TABLE IF NOT EXISTS llm_label_quarantine (
+        ticket_id VARCHAR, input_hash VARCHAR, model VARCHAR,
+        prompt_version VARCHAR, raw_answer VARCHAR, reason VARCHAR,
+        PRIMARY KEY (ticket_id, input_hash, model, prompt_version))""")
+
+    # Estimate only distinct cache misses before the first model call.
+    missing = {}
+    for _, text in tickets:
+        h = sha256(text.encode("utf-8")).hexdigest()
+        cached = con.execute(
+            "SELECT 1 FROM llm_label_cache "
+            "WHERE input_hash=? AND model=? AND prompt_version=?",
+            [h, model, PROMPT_VERSION],
+        ).fetchone()
+        if cached is None:
+            missing[h] = text
+    tokens = estimate_tokens(list(missing.values()))
+    print(f"  cache-miss cost estimate before running: ~{tokens} tokens "
+          f"= ${tokens / 1000 * PRICE_PER_1K_TOKENS_USD:.4f}")
+
     rows = []
-    for ticket_id, text in live_tickets(con):
-        raw = llm.complete(PROMPT_TEMPLATE.format(text=text))
-        rows.append((ticket_id, raw, MODEL, PROMPT_VERSION))
+    for ticket_id, text in tickets:
+        h = sha256(text.encode("utf-8")).hexdigest()
+        key = [h, model, PROMPT_VERSION]
+        cached = con.execute(
+            "SELECT label, raw_answer, reason FROM llm_label_cache "
+            "WHERE input_hash=? AND model=? AND prompt_version=?", key,
+        ).fetchone()
+        if cached is None:
+            raw = llm.complete(PROMPT_TEMPLATE.format(text=text))
+            label = parse_label(raw)
+            reason = None if label is not None else "Invalid JSON label schema"
+            # Rejected answers are cached too: replay does not retry them forever.
+            con.execute("INSERT INTO llm_label_cache VALUES (?, ?, ?, ?, ?, ?)",
+                        [*key, label, raw, reason])
+        else:
+            label, raw, reason = cached
+        if label is None:
+            con.execute(
+                "INSERT INTO llm_label_quarantine VALUES (?, ?, ?, ?, ?, ?) "
+                "ON CONFLICT DO NOTHING",
+                [ticket_id, *key, raw, reason],
+            )
+        else:
+            rows.append((ticket_id, label, model, PROMPT_VERSION))
+
     con.execute("""CREATE OR REPLACE TABLE gold_ticket_labels (
         ticket_id VARCHAR, label VARCHAR, model VARCHAR, prompt_version VARCHAR)""")
     if rows:
         con.executemany("INSERT INTO gold_ticket_labels VALUES (?, ?, ?, ?)", rows)
-    return {"labeled": len(rows), "calls": llm.calls}
+    return {"labeled": len(rows), "calls": llm.calls - calls_before}

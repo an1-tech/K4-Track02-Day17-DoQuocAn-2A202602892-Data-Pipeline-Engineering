@@ -1,0 +1,8 @@
+$ D:\Track2_AI_Data_Infrastructure\K4-Track02-Day17-Data-Pipeline-Engineering\.venv\Scripts\python.exe main.py --land-only
+  2026-08-10  tickets:already-landed(5)  events:already-landed(6)  transcripts:already-landed(1)
+  2026-08-11  tickets:already-landed(3)  events:already-landed(5)  transcripts:already-landed(2)
+  2026-08-12  tickets:already-landed(5)  events:already-landed(6)  transcripts:already-landed(1)
+  2026-08-13  tickets:already-landed(3)  events:already-landed(7)  transcripts:already-landed(1)
+  2026-08-14  tickets:already-landed(4)  events:already-landed(4)  transcripts:already-landed(1)
+  2026-08-15  tickets:already-landed(4)  events:already-landed(8)  transcripts:already-landed(1)
+  2026-08-16  tickets:already-landed(4)  events:already-landed(7)  transcripts:already-landed(2)
