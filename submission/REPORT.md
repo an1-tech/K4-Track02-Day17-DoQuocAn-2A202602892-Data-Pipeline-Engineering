@@ -2,10 +2,11 @@
 
 **Họ tên / MSSV:** Đỗ Quốc An / 2A202602892.
 
-**Repo hiện tại:** https://github.com/an1-tech/K4-Track02-Day17-Data-Pipeline-Engineering
+**Repo bài nộp do học viên cung cấp:** https://github.com/an1-tech/K4-Track02-Day17-DoQuocAn-2A202602892-Data-Pipeline-Engineering
 
 **Tên repo bài nộp cần dùng:** `K4-Track02-Day17-DoQuocAn-2A202602892-DataPipelineEngineering`.
-Repo đúng tên chưa được tạo/push: yêu cầu cho phép xuất bản GitHub đã bị từ chối.
+Học viên đã đổi tên repo với hậu tố `Data-Pipeline-Engineering`; hậu tố này khác
+chuỗi `DataPipelineEngineering` trong SUBMISSION.md. Dùng đúng URL học viên cung cấp.
 
 **Commit mã nguồn và bằng chứng đã kiểm chứng:** `0e0ba84`.
 REPORT được bổ sung ở commit tiếp theo; xem commit mới nhất trên nhánh `main` khi nộp.
