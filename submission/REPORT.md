@@ -300,12 +300,3 @@ $ .\.venv\Scripts\python.exe -m extensions.kg_demo
 | CP5 | dbt PASS=19, parity PARITY, log trong phần 5 |
 | CP6 | REPORT, DESIGN và bằng chứng đã commit/push; repo public, remote commit và checksum đã kiểm tra; nộp LMS chưa hoàn tất |
 
-Giữ nguyên `tests/`, `data/`, `scripts/verify.py`, `scripts/rerun_check.py` và
-`pipeline/checksum.py`. Không đưa `.venv`, `lake`, database hoặc key vào Git.
-
-Bằng chứng GitHub: [github-public.json](evidence/github-public.json).
-Kiểm tra API và file raw không đăng nhập xác nhận repo public, commit khớp local
-và `submission/checksums.txt` đã xuất bản khớp file kiểm chứng.
-
-**LMS:** chưa ghi nhận nộp URL trên LMS; cần thao tác trong tài khoản học viên.
-Deadline thực tế phải đối chiếu lịch lớp/thông báo coach; ngày seed không phải deadline.
