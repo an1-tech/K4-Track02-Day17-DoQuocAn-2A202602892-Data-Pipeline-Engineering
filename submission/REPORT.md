@@ -298,10 +298,14 @@ $ .\.venv\Scripts\python.exe -m extensions.kg_demo
 | CP3 | P99 đo từ Bronze, lookback=3; 3 test chọn lọc pass trong `cp3-lateness.txt` |
 | CP4 | Delete tombstone; verify 18/18, pytest 34 pass, checksums PASS |
 | CP5 | dbt PASS=19, parity PARITY, log trong phần 5 |
-| CP6 | REPORT, DESIGN và bằng chứng đã hoàn thiện/commit local; tạo/push repo và nộp LMS chưa hoàn tất |
+| CP6 | REPORT, DESIGN và bằng chứng đã commit/push; repo public, remote commit và checksum đã kiểm tra; nộp LMS chưa hoàn tất |
 
 Giữ nguyên `tests/`, `data/`, `scripts/verify.py`, `scripts/rerun_check.py` và
 `pipeline/checksum.py`. Không đưa `.venv`, `lake`, database hoặc key vào Git.
+
+Bằng chứng GitHub: [github-public.json](evidence/github-public.json).
+Kiểm tra API và file raw không đăng nhập xác nhận repo public, commit khớp local
+và `submission/checksums.txt` đã xuất bản khớp file kiểm chứng.
 
 **LMS:** chưa ghi nhận nộp URL trên LMS; cần thao tác trong tài khoản học viên.
 Deadline thực tế phải đối chiếu lịch lớp/thông báo coach; ngày seed không phải deadline.
